@@ -1,0 +1,742 @@
+================================================================
+    生活方式分享与种草平台 - 代码说明文档
+================================================================
+
+
+================================================================
+一、项目概述
+================================================================
+
+项目名称：生活方式分享与种草平台
+项目类型：前后端分离的Web应用系统
+
+技术架构：
+  后端：Spring Boot 2.7.18 + MyBatis-Plus 3.5.3.1 + MySQL 8
+  前端：Vue 3 + Vite 5 + Element Plus + ECharts
+  认证：JWT（JSON Web Token）无状态认证
+  接口：RESTful API 风格
+  构建：Maven（后端）+ npm（前端）
+
+系统功能：
+  用户端 —— 注册登录、浏览笔记、发布笔记（富文本+图片）、
+           点赞收藏评论、关注用户、搜索筛选、个人中心管理
+  管理端 —— 用户管理、内容审核、分类管理、数据统计仪表盘
+
+
+================================================================
+二、项目目录结构
+================================================================
+
+生活方式分享与种草平台/
+│
+├── database/                              数据库脚本目录
+│   └── init.sql                           数据库建表SQL脚本
+│
+├── backend/                               后端项目（Spring Boot）
+│   ├── pom.xml                            Maven依赖配置文件
+│   └── src/main/
+│       ├── java/com/lifestyle/platform/
+│       │   ├── LifestylePlatformApplication.java   主启动类
+│       │   │
+│       │   ├── common/                    公共模块
+│       │   │   └── Result.java            统一响应结果封装类
+│       │   │
+│       │   ├── config/                    配置类
+│       │   │   ├── CorsConfig.java        跨域请求配置
+│       │   │   ├── MyBatisPlusConfig.java MyBatis-Plus分页插件配置
+│       │   │   └── WebMvcConfig.java      拦截器注册+静态资源映射
+│       │   │
+│       │   ├── controller/                控制器层（接收HTTP请求）
+│       │   │   ├── AuthController.java    认证控制器（登录/注册）
+│       │   │   ├── UserController.java    用户控制器（资料/关注粉丝）
+│       │   │   ├── NoteController.java    笔记控制器（CRUD/列表）
+│       │   │   ├── CommentController.java 评论控制器
+│       │   │   ├── InteractionController.java 互动控制器（点赞/收藏/关注）
+│       │   │   ├── NotificationController.java 通知控制器
+│       │   │   ├── CategoryController.java 分类控制器（公开接口）
+│       │   │   ├── FileUploadController.java 文件上传控制器
+│       │   │   └── AdminController.java   管理后台控制器
+│       │   │
+│       │   ├── dto/                       数据传输对象
+│       │   │   ├── LoginRequest.java      登录请求参数
+│       │   │   ├── RegisterRequest.java   注册请求参数
+│       │   │   ├── NoteRequest.java       笔记创建/编辑请求参数
+│       │   │   ├── NoteVO.java            笔记视图对象（含作者信息）
+│       │   │   └── CommentVO.java         评论视图对象（含用户信息）
+│       │   │
+│       │   ├── entity/                    实体类（对应数据库表）
+│       │   │   ├── User.java              用户实体
+│       │   │   ├── Note.java              笔记实体
+│       │   │   ├── Comment.java           评论实体
+│       │   │   ├── UserLike.java          点赞实体（表名likes）
+│       │   │   ├── Favorite.java          收藏实体
+│       │   │   ├── Follow.java            关注实体
+│       │   │   ├── Category.java          分类实体
+│       │   │   ├── Tag.java               标签实体
+│       │   │   ├── NoteTag.java           笔记-标签关联实体
+│       │   │   └── Notification.java      通知实体
+│       │   │
+│       │   ├── interceptor/               拦截器
+│       │   │   └── JwtInterceptor.java    JWT认证拦截器
+│       │   │
+│       │   ├── init/                      初始化
+│       │   │   └── DataInitializer.java   应用启动时自动初始化示例数据
+│       │   │
+│       │   ├── mapper/                    数据访问层（MyBatis-Plus Mapper）
+│       │   │   ├── UserMapper.java        用户数据访问
+│       │   │   ├── NoteMapper.java        笔记数据访问
+│       │   │   ├── CommentMapper.java     评论数据访问
+│       │   │   ├── LikeMapper.java        点赞数据访问
+│       │   │   ├── FavoriteMapper.java    收藏数据访问
+│       │   │   ├── FollowMapper.java      关注数据访问
+│       │   │   ├── CategoryMapper.java    分类数据访问
+│       │   │   ├── TagMapper.java         标签数据访问
+│       │   │   ├── NoteTagMapper.java     笔记标签数据访问
+│       │   │   └── NotificationMapper.java 通知数据访问
+│       │   │
+│       │   ├── service/                   业务逻辑层
+│       │   │   ├── UserService.java       用户业务（注册/登录/资料/注销）
+│       │   │   ├── NoteService.java       笔记业务（CRUD/搜索/推荐）
+│       │   │   ├── CommentService.java    评论业务（发表/删除/嵌套）
+│       │   │   ├── InteractionService.java 互动业务（点赞/收藏/关注）
+│       │   │   ├── NotificationService.java 通知业务
+│       │   │   ├── CategoryService.java   分类业务
+│       │   │   └── AdminService.java      管理后台业务（统计/审核）
+│       │   │
+│       │   └── util/                      工具类
+│       │       └── JwtUtil.java           JWT令牌生成与解析
+│       │
+│       └── resources/
+│           └── application.yml            应用配置文件
+│
+├── frontend/                              前端项目（Vue 3）
+│   ├── package.json                       npm依赖配置
+│   ├── vite.config.js                     Vite构建配置（含API代理）
+│   ├── index.html                         HTML入口
+│   └── src/
+│       ├── main.js                        应用入口（注册插件）
+│       ├── App.vue                        根组件
+│       │
+│       ├── api/                           API接口封装
+│       │   ├── request.js                 Axios实例（拦截器/错误处理）
+│       │   ├── auth.js                    认证接口（登录/注册）
+│       │   ├── user.js                    用户接口
+│       │   ├── note.js                    笔记接口
+│       │   ├── comment.js                 评论接口
+│       │   ├── interaction.js             互动接口
+│       │   ├── notification.js            通知接口
+│       │   ├── admin.js                   管理后台接口
+│       │   ├── category.js                分类接口
+│       │   └── upload.js                  文件上传接口
+│       │
+│       ├── stores/                        状态管理（Pinia）
+│       │   └── user.js                    用户状态（token/userInfo）
+│       │
+│       ├── router/                        路由配置
+│       │   └── index.js                   路由表+导航守卫
+│       │
+│       ├── components/                    公共组件
+│       │   ├── NavBar.vue                 顶部导航栏
+│       │   ├── NoteCard.vue               笔记卡片组件
+│       │   ├── UserCard.vue               用户卡片组件
+│       │   └── CommentSection.vue         评论区组件
+│       │
+│       ├── views/                         页面组件
+│       │   ├── Home.vue                   首页（分类/排序/瀑布流）
+│       │   ├── Login.vue                  登录页
+│       │   ├── Register.vue               注册页
+│       │   ├── NoteDetail.vue             笔记详情页
+│       │   ├── NoteEdit.vue               笔记编辑/发布页
+│       │   ├── Search.vue                 搜索结果页
+│       │   ├── Profile.vue                用户公开主页
+│       │   ├── UserCenter.vue             个人中心
+│       │   ├── MyNotes.vue                我的笔记
+│       │   ├── MyFavorites.vue            我的收藏
+│       │   ├── FollowList.vue             关注/粉丝列表
+│       │   ├── Settings.vue               账号设置
+│       │   ├── Notifications.vue          通知中心
+│       │   └── admin/                     管理后台页面
+│       │       ├── AdminLayout.vue        后台整体布局（侧边栏+内容区）
+│       │       ├── Dashboard.vue          数据统计仪表盘（ECharts图表）
+│       │       ├── UserManage.vue         用户管理
+│       │       ├── NoteReview.vue         内容审核
+│       │       └── CategoryManage.vue     分类管理
+│       │
+│       └── assets/styles/
+│           └── main.css                   全局CSS样式变量和基础样式
+│
+├── 测试账号                               测试账号信息
+├── 需求文档                               项目需求说明
+├── 部署运行文档.txt                       部署运行指南
+└── 代码说明文档.txt                       本文档
+
+
+================================================================
+三、技术栈详细说明
+================================================================
+
+【后端技术栈】
+
+  框架/库                    版本          用途
+  ──────────────────────────────────────────────────────────
+  Spring Boot               2.7.18        Web应用框架
+  MyBatis-Plus              3.5.3.1       ORM框架（简化数据库操作）
+  MySQL Connector/J         8.0.33        MySQL数据库驱动
+  jjwt                      0.9.1         JWT令牌生成与验证
+  Spring Security Crypto    -             BCrypt密码加密
+  Lombok                    -             简化Java代码（自动getter/setter）
+  Hutool                    5.8.22        Java工具类库
+  commons-io                2.13.0        文件IO工具
+  commons-lang3             3.13.0        字符串工具
+
+  Java版本要求：JDK 17
+  构建工具：Apache Maven 3.6+
+  服务端口：8080
+
+【前端技术栈】
+
+  框架/库                    版本          用途
+  ──────────────────────────────────────────────────────────
+  Vue                       3.x           前端框架（Composition API）
+  Vite                      5.x           构建工具（开发服务器+打包）
+  Vue Router                4.x           前端路由管理
+  Pinia                     2.x           状态管理（替代Vuex）
+  Axios                     1.x           HTTP请求库
+  Element Plus              2.x           UI组件库
+  @element-plus/icons-vue   2.x           Element Plus图标库
+  @wangeditor/editor        5.x           富文本编辑器
+  @wangeditor/editor-for-vue 5.x          wangeditor的Vue3适配
+  echarts                   5.x           图表库
+  vue-echarts               6.x           ECharts的Vue3封装
+
+  Node.js版本要求：18+
+  开发服务端口：5173
+
+
+================================================================
+四、数据库设计
+================================================================
+
+数据库名：lifestyle_platform
+字符集：utf8mb4
+排序规则：utf8mb4_general_ci
+
+共10张数据表，关系如下：
+
+【1】users - 用户表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      用户ID
+  username         VARCHAR(50) UNI   用户名（唯一，登录用）
+  email            VARCHAR(100)      邮箱（可选）
+  phone            VARCHAR(20)       手机号（可选）
+  password         VARCHAR(255)      密码（BCrypt加密存储）
+  nickname         VARCHAR(50)       昵称（显示用）
+  avatar           VARCHAR(500)      头像URL
+  bio              TEXT              个人简介
+  role             VARCHAR(20)       角色：user/admin
+  status           INT DEFAULT 1     状态：0=禁用 1=正常
+  followers_count  INT DEFAULT 0     粉丝数
+  following_count  INT DEFAULT 0     关注数
+  notes_count      INT DEFAULT 0     笔记数
+  created_at       DATETIME          注册时间
+  updated_at       DATETIME          更新时间
+
+【2】categories - 分类表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      分类ID
+  name             VARCHAR(50) UNI   分类名称
+  icon             VARCHAR(50)       图标标识
+  sort_order       INT DEFAULT 0     排序序号
+
+【3】notes - 笔记表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      笔记ID
+  user_id          BIGINT FK         作者用户ID
+  title            VARCHAR(200)      标题
+  content          TEXT              正文内容（HTML富文本）
+  cover_image      VARCHAR(500)      封面图URL
+  images           TEXT              附加图片URL（JSON数组）
+  category_id      BIGINT FK         所属分类ID
+  status           INT DEFAULT 0     状态：0=待审核 1=已发布 2=已驳回
+  reject_reason    VARCHAR(500)      驳回原因
+  view_count       INT DEFAULT 0     浏览量
+  like_count       INT DEFAULT 0     点赞数
+  comment_count    INT DEFAULT 0     评论数
+  favorite_count   INT DEFAULT 0     收藏数
+  created_at       DATETIME          创建时间
+  updated_at       DATETIME          更新时间
+
+  外键：user_id → users(id) ON DELETE CASCADE
+  外键：category_id → categories(id) ON DELETE SET NULL
+
+【4】tags - 标签表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      标签ID
+  name             VARCHAR(50) UNI   标签名称
+
+【5】note_tags - 笔记标签关联表（多对多）
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  note_id          BIGINT FK         笔记ID
+  tag_id           BIGINT FK         标签ID
+  PRIMARY KEY (note_id, tag_id)
+
+  外键：note_id → notes(id) ON DELETE CASCADE
+  外键：tag_id → tags(id) ON DELETE CASCADE
+
+【6】comments - 评论表（支持嵌套回复）
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      评论ID
+  note_id          BIGINT FK         所属笔记ID
+  user_id          BIGINT FK         评论者用户ID
+  parent_id        BIGINT            父评论ID（NULL=顶级评论）
+  content          TEXT              评论内容
+  created_at       DATETIME          评论时间
+
+  外键：note_id → notes(id) ON DELETE CASCADE
+  外键：user_id → users(id) ON DELETE CASCADE
+
+【7】likes - 点赞表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      记录ID
+  user_id          BIGINT FK         点赞用户ID
+  note_id          BIGINT FK         被赞笔记ID
+  created_at       DATETIME          点赞时间
+  UNIQUE (user_id, note_id)          防止重复点赞
+
+【8】favorites - 收藏表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      记录ID
+  user_id          BIGINT FK         收藏用户ID
+  note_id          BIGINT FK         被收藏笔记ID
+  created_at       DATETIME          收藏时间
+  UNIQUE (user_id, note_id)          防止重复收藏
+
+【9】follows - 关注表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      记录ID
+  follower_id      BIGINT FK         关注者用户ID
+  following_id     BIGINT FK         被关注者用户ID
+  created_at       DATETIME          关注时间
+  UNIQUE (follower_id, following_id) 防止重复关注
+
+【10】notifications - 通知表
+  字段名            类型              说明
+  ─────────────────────────────────────────────
+  id               BIGINT PK AI      通知ID
+  user_id          BIGINT FK         接收通知的用户ID
+  from_user_id     BIGINT FK         触发通知的用户ID
+  type             VARCHAR(20)       通知类型：like/comment/follow/system
+  note_id          BIGINT            关联笔记ID（可选）
+  content          VARCHAR(500)      通知内容
+  is_read          TINYINT DEFAULT 0 是否已读：0=未读 1=已读
+  created_at       DATETIME          通知时间
+
+
+================================================================
+五、后端架构说明
+================================================================
+
+【分层架构】
+
+  HTTP请求 → Controller（控制器层）→ Service（业务逻辑层）→ Mapper（数据访问层）→ MySQL数据库
+
+  Controller：接收HTTP请求，参数校验，调用Service，返回Result<T>
+  Service：核心业务逻辑处理，事务管理
+  Mapper：继承MyBatis-Plus的BaseMapper，自动生成CRUD SQL
+  Entity：与数据库表一一对应的Java实体类
+  DTO：数据传输对象，用于接收请求参数或返回视图数据
+
+【统一响应格式 Result<T>】
+
+  所有API返回统一JSON格式：
+  {
+    "code": 200,          // 状态码：200成功，400参数错误，401未认证，403禁止，500服务器错误
+    "message": "操作成功", // 提示信息
+    "data": { ... }       // 返回数据（可选）
+  }
+
+  Result.java 提供静态方法：
+    Result.success(data)           → code=200
+    Result.success(message, data)  → code=200
+    Result.error(message)          → code=400
+    Result.error(code, message)    → 自定义code
+
+【JWT认证流程】
+
+  1. 用户登录 → AuthController.login() → 验证用户名密码
+  2. 验证通过 → JwtUtil.generateToken(userId) → 生成JWT令牌（有效期7天）
+  3. 返回token给前端 → 前端存入localStorage
+  4. 后续请求 → 前端在请求头添加 Authorization: Bearer <token>
+  5. JwtInterceptor拦截请求 → 解析token → 将userId存入request属性
+  6. Controller通过 request.getAttribute("userId") 获取当前用户ID
+
+  JwtInterceptor 拦截规则：
+    拦截路径：/api/**
+    排除路径：/api/auth/**（登录注册）、/api/upload/**（文件上传）
+    可选认证（GET请求）：
+      /api/notes, /api/notes/{id}, /api/notes/hot
+      /api/categories
+      /api/comments/note/{noteId}
+      /api/users/{id}, /api/users/{id}/notes
+      /api/users/{id}/followers, /api/users/{id}/following
+
+【DataInitializer 数据初始化器】
+
+  实现 CommandLineRunner 接口，在Spring Boot启动后自动执行。
+  检查users表是否为空：
+    - 如果为空：初始化6个用户、8个分类、20+标签、16篇笔记、
+      评论、点赞、收藏、关注关系、通知等完整示例数据
+    - 如果不为空：跳过初始化，打印"数据库已有数据，跳过初始化"
+
+  所有示例图片使用 Unsplash 在线图片URL，无需本地图片文件。
+
+【密码加密】
+
+  使用 Spring Security 的 BCryptPasswordEncoder 进行密码加密。
+  注册时：明文密码 → BCrypt加密 → 存入数据库
+  登录时：输入密码 → BCrypt.matches(输入, 数据库密文) → 验证
+
+
+================================================================
+六、后端API接口清单
+================================================================
+
+【认证模块 AuthController】
+  POST /api/auth/register        用户注册
+    请求体：{ username, password, nickname, email?, phone? }
+    返回：{ code:200, data:{ token, user } }
+
+  POST /api/auth/login           用户登录
+    请求体：{ username, password }
+    返回：{ code:200, data:{ token, user } }
+
+【用户模块 UserController】
+  GET  /api/users/profile        获取当前登录用户资料（需认证）
+  PUT  /api/users/profile        更新用户资料（需认证）
+    请求体：{ nickname?, avatar?, bio?, email?, phone? }
+  PUT  /api/users/password       修改密码（需认证）
+    请求体：{ oldPassword, newPassword }
+  DELETE /api/users/account      注销账号（需认证，级联删除所有关联数据）
+
+  GET  /api/users/{id}           获取用户公开信息
+  GET  /api/users/{id}/notes     获取指定用户的笔记列表
+  GET  /api/users/{id}/followers 获取粉丝列表
+  GET  /api/users/{id}/following 获取关注列表
+
+【笔记模块 NoteController】
+  GET  /api/notes                笔记列表（分页+搜索+分类筛选+排序）
+    参数：page, size, keyword?, categoryId?, orderBy(latest/hot)
+  GET  /api/notes/{id}           笔记详情（自动增加浏览量）
+  POST /api/notes                创建笔记（需认证）
+    请求体：{ title, content, coverImage?, images?, categoryId, tagList? }
+  PUT  /api/notes/{id}           更新笔记（需认证，仅作者可操作）
+  DELETE /api/notes/{id}         删除笔记（需认证，仅作者可操作）
+
+  GET  /api/notes/my             我的笔记列表（需认证）
+  GET  /api/notes/favorites      我的收藏列表（需认证）
+  GET  /api/notes/following      关注用户的笔记（需认证）
+  GET  /api/notes/hot            热门笔记推荐
+
+【评论模块 CommentController】
+  GET  /api/comments/note/{noteId}  获取笔记的评论列表
+  POST /api/comments                发表评论（需认证）
+    请求体：{ noteId, content, parentId? }
+  DELETE /api/comments/{id}         删除评论（需认证，仅评论者可操作）
+
+【互动模块 InteractionController】
+  POST /api/interactions/like/{noteId}     点赞/取消点赞（需认证，切换式）
+    返回：{ liked: true/false }
+  POST /api/interactions/favorite/{noteId} 收藏/取消收藏（需认证，切换式）
+    返回：{ favorited: true/false }
+  POST /api/interactions/follow/{userId}   关注/取消关注（需认证，切换式）
+    返回：{ followed: true/false }
+  GET  /api/interactions/status/{noteId}   获取当前用户对笔记的互动状态
+    返回：{ liked, favorited }
+  GET  /api/interactions/follow-status/{userId} 获取关注状态
+    返回：{ followed }
+
+【通知模块 NotificationController】
+  GET  /api/notifications              获取通知列表（需认证，分页）
+  PUT  /api/notifications/{id}/read    标记单条通知已读
+  PUT  /api/notifications/read-all     全部标记已读
+  GET  /api/notifications/unread-count 获取未读通知数量
+
+【分类模块 CategoryController】
+  GET  /api/categories             获取所有分类列表（公开接口）
+
+【文件上传 FileUploadController】
+  POST /api/upload                 上传文件（图片）
+    请求体：multipart/form-data, 字段名 file
+    返回：{ code:200, data: "/uploads/xxx.jpg" }
+    文件存储在 backend/uploads/ 目录下
+
+【管理后台 AdminController】（需管理员权限）
+  GET  /api/admin/stats            获取统计数据（总用户/笔记/评论/日活/趋势）
+  GET  /api/admin/users            用户列表（分页+搜索）
+  PUT  /api/admin/users/{id}/status       修改用户状态（启用/禁用）
+  PUT  /api/admin/users/{id}/reset-password 重置用户密码为123456
+  GET  /api/admin/notes            待审核笔记列表
+  GET  /api/admin/notes/all        全部笔记列表
+  PUT  /api/admin/notes/{id}/approve      审核通过笔记
+  PUT  /api/admin/notes/{id}/reject       驳回笔记（附驳回原因）
+  POST /api/admin/categories       添加分类
+  PUT  /api/admin/categories/{id}  修改分类
+  DELETE /api/admin/categories/{id} 删除分类
+
+
+================================================================
+七、前端架构说明
+================================================================
+
+【Vue 3 Composition API】
+
+  所有组件使用 <script setup> 语法，这是Vue 3推荐的写法。
+  特点：更简洁、更好的TypeScript支持、更好的逻辑复用。
+
+【Pinia 状态管理】
+
+  stores/user.js 管理全局用户状态：
+    - token：JWT令牌，持久化到localStorage
+    - userInfo：当前用户信息对象
+    - isLoggedIn：计算属性，判断是否已登录
+    - isAdmin：计算属性，判断是否为管理员
+    - login(data)：保存token和用户信息
+    - logout()：清除token和用户信息
+    - fetchProfile()：从后端获取最新用户资料
+
+【Axios 请求封装】
+
+  api/request.js 创建Axios实例：
+    - baseURL: '/api'（通过Vite代理转发到后端8080端口）
+    - 请求拦截器：自动在请求头添加 Authorization: Bearer <token>
+    - 响应拦截器：
+      * 正常响应：直接返回 response.data
+      * 401错误：清除token，跳转到登录页
+      * 其他错误：显示Element Plus错误提示
+
+【Vue Router 路由配置】
+
+  router/index.js 定义所有路由：
+    公开路由：首页、登录、注册、笔记详情、搜索、用户主页
+    需认证路由（meta.requiresAuth = true）：
+      笔记编辑、个人中心、我的笔记、我的收藏、关注列表、
+      设置、通知
+    管理路由（meta.requiresAdmin = true）：
+      /admin 及其子路由（仪表盘、用户管理、内容审核、分类管理）
+
+  导航守卫：
+    - requiresAuth 路由：未登录则跳转到 /login
+    - requiresAdmin 路由：非管理员则跳转到 /
+
+【Vite 开发代理】
+
+  vite.config.js 配置：
+    /api 开头的请求 → 代理到 http://localhost:8080
+    自动去除 /api 前缀（rewrite）
+
+【Element Plus UI组件库】
+
+  全局注册，提供：
+    - 表单组件：ElInput, ElSelect, ElDatePicker 等
+    - 数据展示：ElTable, ElPagination, ElTag 等
+    - 反馈组件：ElMessage, ElMessageBox, ElNotification 等
+    - 布局组件：ElContainer, ElMenu, ElCard 等
+    - 图标：@element-plus/icons-vue 全局注册
+
+【wangeditor 富文本编辑器】
+
+  用于笔记编辑页面（NoteEdit.vue），支持：
+    - 文字格式化（加粗、斜体、标题等）
+    - 图片插入（支持上传到后端）
+    - 链接插入
+    - 列表、引用等
+
+【ECharts 图表】
+
+  用于管理后台仪表盘（Dashboard.vue），展示：
+    - 用户增长趋势折线图（近7天）
+    - 笔记发布趋势折线图（近7天）
+    - 数据随真实数据库数据动态变化
+
+
+================================================================
+八、前端页面功能说明
+================================================================
+
+【Home.vue - 首页】
+  功能：展示笔记列表，支持分类筛选、排序切换、分页加载
+  排序选项：最新、最热、关注（登录后显示）
+  调用API：GET /api/notes, GET /api/notes/following, GET /api/categories
+
+【Login.vue - 登录页】
+  功能：用户名+密码登录
+  调用API：POST /api/auth/login
+  登录成功后保存token，跳转首页
+
+【Register.vue - 注册页】
+  功能：用户名+密码+昵称+邮箱(可选)+手机号(可选)注册
+  调用API：POST /api/auth/register
+  注册成功后自动登录并跳转首页
+
+【NoteDetail.vue - 笔记详情页】
+  功能：展示笔记完整内容、图片轮播、作者信息、
+       点赞/收藏/关注按钮、评论区
+  调用API：GET /api/notes/{id}, GET /api/interactions/status/{id},
+          POST /api/interactions/like/{id} 等
+
+【NoteEdit.vue - 笔记编辑页】
+  功能：创建或编辑笔记，富文本编辑器，封面图上传，
+       分类选择，标签输入
+  调用API：POST /api/notes, PUT /api/notes/{id}, POST /api/upload
+
+【Search.vue - 搜索页】
+  功能：关键词搜索笔记，展示搜索结果列表
+  调用API：GET /api/notes?keyword=xxx
+
+【Profile.vue - 用户公开主页】
+  功能：展示用户资料、统计数据、该用户的笔记列表、关注按钮
+  调用API：GET /api/users/{id}, GET /api/users/{id}/notes
+
+【UserCenter.vue - 个人中心】
+  功能：展示当前用户资料和统计，快捷入口（我的笔记/收藏/关注等）
+  调用API：GET /api/users/profile
+
+【MyNotes.vue - 我的笔记】
+  功能：列表展示当前用户的所有笔记，支持编辑和删除
+  调用API：GET /api/notes/my, DELETE /api/notes/{id}
+
+【MyFavorites.vue - 我的收藏】
+  功能：列表展示当前用户收藏的笔记
+  调用API：GET /api/notes/favorites
+
+【FollowList.vue - 关注/粉丝列表】
+  功能：展示关注列表或粉丝列表（通过路由参数切换）
+  调用API：GET /api/users/{id}/following, GET /api/users/{id}/followers
+
+【Settings.vue - 账号设置】
+  功能：修改头像、昵称、简介、绑定信息（邮箱/手机号）、
+       修改密码、注销账号
+  调用API：PUT /api/users/profile, PUT /api/users/password,
+          DELETE /api/users/account, POST /api/upload
+
+【Notifications.vue - 通知中心】
+  功能：展示通知列表，标记已读，全部已读
+  调用API：GET /api/notifications, PUT /api/notifications/{id}/read,
+          PUT /api/notifications/read-all
+
+【admin/Dashboard.vue - 管理仪表盘】
+  功能：展示总用户数、总笔记数、总评论数、日活跃用户数，
+       用户增长趋势图、笔记发布趋势图（ECharts折线图）
+  调用API：GET /api/admin/stats
+
+【admin/UserManage.vue - 用户管理】
+  功能：用户列表（分页+搜索），启用/禁用用户，重置密码
+  调用API：GET /api/admin/users, PUT /api/admin/users/{id}/status,
+          PUT /api/admin/users/{id}/reset-password
+
+【admin/NoteReview.vue - 内容审核】
+  功能：待审核笔记列表，审核通过/驳回（附原因）
+  调用API：GET /api/admin/notes, PUT /api/admin/notes/{id}/approve,
+          PUT /api/admin/notes/{id}/reject
+
+【admin/CategoryManage.vue - 分类管理】
+  功能：分类列表，添加/编辑/删除分类
+  调用API：GET /api/categories, POST /api/admin/categories,
+          PUT /api/admin/categories/{id}, DELETE /api/admin/categories/{id}
+
+
+================================================================
+九、设计风格说明
+================================================================
+
+【配色方案】
+
+  主色调：#52b788（清新绿）—— 按钮、链接、导航高亮
+  强调色：#e07a5f（暖珊瑚）—— 点赞、收藏等互动按钮
+  背景色：#faf9f7（暖白色）—— 页面整体背景
+  卡片色：#ffffff（纯白）—— 内容卡片背景
+  文字色：#2d3436（深灰）—— 主要文字
+  次要文字：#636e72（中灰）—— 辅助信息
+
+【设计特点】
+
+  - 清新自然风格，参考小红书暖色调设计
+  - 圆角卡片设计（border-radius: 12px-16px）
+  - 柔和阴影效果（box-shadow: 0 2px 12px rgba(0,0,0,0.08)）
+  - 悬停动效（hover时卡片微微上浮+阴影加深）
+  - 响应式布局，适配不同屏幕尺寸
+  - 字体：PingFang SC, Microsoft YaHei, sans-serif
+
+【CSS变量定义（main.css）】
+
+  :root {
+    --primary: #52b788;
+    --primary-light: #74c69d;
+    --primary-dark: #40916c;
+    --accent: #e07a5f;
+    --bg: #faf9f7;
+    --card-bg: #ffffff;
+    --text-primary: #2d3436;
+    --text-secondary: #636e72;
+    --border: #e8e8e8;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 12px;
+  }
+
+
+================================================================
+十、功能对照需求文档清单
+================================================================
+
+【1. 用户认证模块】                                    状态
+  ├── 用户注册（用户名+密码+昵称+邮箱+手机号）         ✓ 已实现
+  ├── 用户登录（用户名+密码，JWT令牌）                  ✓ 已实现
+  ├── 个人信息管理（修改资料/头像/简介）                ✓ 已实现
+  ├── 修改密码                                         ✓ 已实现
+  └── 账号注销（级联删除所有关联数据）                  ✓ 已实现
+
+【2. 内容创作模块】                                    状态
+  ├── 笔记编辑（wangeditor富文本编辑器）                ✓ 已实现
+  ├── 图片上传（封面图+正文图片）                       ✓ 已实现
+  ├── 笔记发布（提交后待审核）                          ✓ 已实现
+  ├── 笔记管理（编辑/删除自己的笔记）                   ✓ 已实现
+  └── 分类与标签（选择分类+添加标签）                   ✓ 已实现
+
+【3. 社交互动模块】                                    状态
+  ├── 点赞（切换式，实时更新计数）                      ✓ 已实现
+  ├── 评论（支持嵌套回复）                              ✓ 已实现
+  ├── 收藏（切换式，实时更新计数）                      ✓ 已实现
+  ├── 关注（切换式，更新粉丝/关注计数）                 ✓ 已实现
+  └── 消息通知（点赞/评论/关注触发通知）                ✓ 已实现
+
+【4. 内容发现模块】                                    状态
+  ├── 关键词搜索                                       ✓ 已实现
+  ├── 分类筛选                                         ✓ 已实现
+  ├── 热门推荐（按点赞+收藏排序）                       ✓ 已实现
+  ├── 关注动态（查看关注用户的笔记）                    ✓ 已实现
+  └── 分页浏览                                         ✓ 已实现
+
+【5. 个人中心模块】                                    状态
+  ├── 个人主页（展示资料+统计+笔记列表）                ✓ 已实现
+  ├── 我的笔记（管理自己的笔记）                        ✓ 已实现
+  ├── 我的收藏                                         ✓ 已实现
+  ├── 关注/粉丝列表                                    ✓ 已实现
+  └── 账号设置（资料/绑定信息/密码/注销）               ✓ 已实现
+
+【6. 后台管理模块】                                    状态
+  ├── 用户管理（列表/搜索/禁用/启用/重置密码）          ✓ 已实现
+  ├── 内容审核（审核通过/驳回+原因）                    ✓ 已实现
+  ├── 分类管理（增删改）                                ✓ 已实现
+  └── 数据统计（总览数字+ECharts趋势图表）              ✓ 已实现
+
+================================================================
+================================================================

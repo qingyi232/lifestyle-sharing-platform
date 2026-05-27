@@ -1,0 +1,170 @@
+:root {
+  --primary: #52b788;
+  --primary-light: #b7e4c7;
+  --primary-dark: #2d6a4f;
+  --accent: #e07a5f;
+  --bg: #faf9f7;
+  --card-bg: #ffffff;
+  --text-primary: #2d3436;
+  --text-secondary: #636e72;
+  --border: #e8e8e8;
+  --bg-light: #f5f5f3;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-family);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Element Plus 主题覆盖 */
+:root {
+  --el-color-primary: #52b788 !important;
+  --el-color-primary-light-3: #7ecba4 !important;
+  --el-color-primary-light-5: #a8d8ba !important;
+  --el-color-primary-light-7: #c4e8d1 !important;
+  --el-color-primary-light-8: #d5efdf !important;
+  --el-color-primary-light-9: #e8f5ec !important;
+  --el-color-primary-dark-2: #429670 !important;
+  --el-border-radius-base: 8px !important;
+  --el-font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif !important;
+}
+
+.el-button--primary {
+  --el-button-bg-color: #52b788 !important;
+  --el-button-border-color: #52b788 !important;
+  --el-button-hover-bg-color: #6bc49a !important;
+  --el-button-hover-border-color: #6bc49a !important;
+  --el-button-active-bg-color: #429670 !important;
+  --el-button-active-border-color: #429670 !important;
+}
+
+.el-menu--horizontal > .el-menu-item.is-active {
+  border-bottom-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.el-tabs__active-bar {
+  background-color: var(--primary) !important;
+}
+
+.el-tabs__item.is-active {
+  color: var(--primary) !important;
+}
+
+.el-tabs__item:hover {
+  color: var(--primary) !important;
+}
+
+.el-tag {
+  border-radius: 20px;
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background-color: var(--primary) !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+/* 通用工具类 */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: calc(100vh - 60px);
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+/* wangeditor 样式 */
+.w-e-text-container [data-slate-editor] {
+  min-height: 300px !important;
+}
